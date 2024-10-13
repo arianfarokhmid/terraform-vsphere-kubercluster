@@ -1,0 +1,6 @@
+---
+- name: installing kubelet
+  apt:
+        name: kubelet
+        state: present
+ 

@@ -1,0 +1,54 @@
+---
+- name: installing kubectl
+  apt:
+    name: kubectl
+    state: present
+
+- name: Check if the master node is already initialized
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubeadm_init
+
+- name: Initialize the master node
+  shell: kubeadm init --pod-network-cidr=10.244.0.0/16
+  when: kubeadm_init.stat.exists == false
+
+- name: Create .kube directory
+  file:
+    path: /home/support/.kube
+    state: directory
+    owner: support
+    group: support
+    mode: 0755
+  when: kubeadm_init.stat.exists == false
+
+- name: Copy the kube config file
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/support/.kube/config
+    remote_src: yes
+    owner: support
+    group: support
+    mode: 0644
+  when: kubeadm_init.stat.exists == false
+
+- name: Install calico CNI
+  shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+  become: yes
+  become_user: support
+
+- name: Get the token for joining the worker nodes
+  become: yes
+  become_user: support
+  shell: kubeadm token create --print-join-command
+  register: join_command
+
+- name: Set join command variable
+  set_fact:
+    kubernetes_join_command: "{{ join_command.stdout }}"
+
+- name: Create dummy host to store variable for node config
+  add_host:
+    name: master1
+    groups: master_nodes
+    JOIN_COMMAND: "{{ kubernetes_join_command }}"

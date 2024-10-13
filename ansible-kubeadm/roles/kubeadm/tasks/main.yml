@@ -1,0 +1,5 @@
+---
+- name: installing kubeadm
+  apt:
+        name: kubeadm
+        state: present

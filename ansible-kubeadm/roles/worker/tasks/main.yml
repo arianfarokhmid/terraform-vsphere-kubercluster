@@ -1,0 +1,9 @@
+---
+- name: Check if the worker node is already joined
+  stat:
+    path: /etc/kubernetes/pki/ca.crt
+  register: kubeadm_join
+
+- name: join worker nodes to cluster
+  shell: "{{ hostvars['master1']['JOIN_COMMAND'] }}"
+  when: kubeadm_join.stat.exists == false

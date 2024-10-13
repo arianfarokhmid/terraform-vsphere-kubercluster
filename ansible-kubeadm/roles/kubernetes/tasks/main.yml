@@ -1,0 +1,13 @@
+---
+
+- name: add Kubernetes apt-key
+  apt_key:
+          url: https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key
+          state: present
+          keyring: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+- name: add Kubernetes apt repository
+  apt_repository:
+          repo: deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /
+          state: present
+          filename: 'kubernetes'
