@@ -105,3 +105,40 @@ resource "vsphere_virtual_machine" "control-plane" {
     }
   }
 }
+
+
+
+
+resource "time_sleep" "wait_1min" {                        # wait 3 min for vmtools on esxi
+   depends_on = [
+    
+    vsphere_virtual_machine.worker,
+    vsphere_virtual_machine.control-plane
+  ]
+
+   create_duration = "3m"
+}
+
+
+
+
+
+# Ensure VMs are provisioned first
+resource "null_resource" "generate_ansible_inventory" {
+  provisioner "local-exec" {
+    command = "./generate_ansible_inventory.sh"
+  }
+
+  depends_on = [time_sleep.wait_1min]
+}
+
+# Run the Ansible playbook after the inventory is generated
+resource "null_resource" "run_ansible" {
+  provisioner "local-exec" {
+    command = "ansible-playbook -i hosts.ini ./ansible-kubeadm/kubeadm.yml"
+  }
+
+  depends_on = [
+    null_resource.generate_ansible_inventory
+  ]
+}
