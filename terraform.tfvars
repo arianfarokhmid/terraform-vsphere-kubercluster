@@ -1,7 +1,7 @@
 ############### genearl configs #############
 
 vsphere_user            = "terraform@vsphere.local"
-vsphere_password        = "Aa@123456"
+vsphere_password        = "---"
 vsphere_server          = "192.168.7.12"
 resource_name           = "test"
 ipv4_gateway            = "192.168.7.1"
